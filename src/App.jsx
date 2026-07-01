@@ -5,7 +5,7 @@ import './App.css'
 // FIREBASE CODE START
 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push ,onValue, onDisconnect } from "firebase/database";
+import { getDatabase, ref, set, push ,onValue, onDisconnect, increment, update } from "firebase/database";
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -30,11 +30,85 @@ function App(){
   const sendRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [roomCode, setRoomCode] = useState(0);
+  const prevRoomCode = useRef(null)
+  const [activeConnections, setActiveConnections] = useState(1);
+  const isCreating = useRef(false)
+  const markedPresence = useRef(false)
 
-  const messageRef = ref(db, `chats/${roomCode}`);  
-  const newMessageRef = push(messageRef)
 
-  function writeUserData(userId) {
+  useEffect(()=>{
+
+    if(roomCode==0 && (isCreating.current)) return;
+
+    if(roomCode!=0){
+      isCreating.current = false;
+    }
+
+    if(roomCode==0){
+
+      isCreating.current = true;
+
+      const id = Math.floor(Math.random()*(999999 - 100000) + 100000);
+      setRoomCode(id)
+      prevRoomCode = id;
+
+      const tempRef = ref(db,`chats/${id}`)
+
+      set(tempRef, {
+        activeConnections:0
+      })
+
+      onDisconnect(tempRef).remove()
+
+      return;
+    } 
+
+    const messageRef = ref(db, `chats/${roomCode}`);  
+    const messageHeaderRef = ref(db, `chats/${roomCode}/messages`)
+
+    update(messageRef,{
+        activeConnections:increment(1)
+    })
+
+    onDisconnect(messageRef).update({
+      activeConnections:increment(-1)
+    })
+
+
+    const checkformsg = onValue(messageHeaderRef, (snapshot)=>{
+      let data = snapshot.val();
+      console.log(data)
+      let tempMsg = []
+
+      for(let obj in data){
+        console.log(data[obj].message)
+        tempMsg.push(data[obj].message)
+      }
+
+      setMessages(tempMsg)
+    })
+
+    const activeUsers = onValue(messageRef,(snapshot)=>{
+      let data = snapshot.val();
+      if(!data.activeConnections) return;
+      if(data.activeConnections <= 1){
+        console.log("delete ts")
+        onDisconnect(messageRef).remove()
+      }
+      else{
+        console.log("dont delete ts")
+        onDisconnect(messageRef).cancel()
+        onDisconnect(messageRef).update({activeConnections:increment(-1)})
+      }
+    })
+
+    return(
+      ()=>{checkformsg();activeUsers()}
+    )
+
+  },[roomCode])
+
+  function writeUserData() {
     console.log("Sending user data")
 
     let val = "";
@@ -45,42 +119,15 @@ function App(){
       val = sendRef.current.value;
     }
 
+    const messageHeaderRef = ref(db, `chats/${roomCode}/messages`)
+    const newMessageRef = push(messageHeaderRef)
+
     set(newMessageRef, {
       message: val,
     });
+
+    sendRef.current.value = "";
   }
-
-  useEffect(()=>{
-
-    if(roomCode==0){
-      const id = Math.floor(Math.random()*(999999 - 100000) + 100000);
-      setRoomCode(id)
-      const tempref = ref(db, `chats/${id}`);  
-
-      onDisconnect(tempref).remove()
-    }
-
-  })
-
-  useEffect(()=>{
-
-    onValue(messageRef, (snapshot)=>{
-      let data = snapshot.val();
-      console.log(data);
-
-      let tempMsg = []
-
-      for(let obj in data){
-        console.log(data[obj].message)
-        tempMsg.push(data[obj].message)
-      }
-
-      console.log(tempMsg)
-
-      setMessages(tempMsg)
-    })
-
-  },[roomCode])
 
   return (
     <div className="maindiv">
@@ -101,8 +148,8 @@ function App(){
             }
           </div>
           <div className="sendmessageinput">
-            <input type="text" maxLength={300} ref={sendRef} className="sendmessage"/>
-            <div className="sendmessagebutton" onClick={()=>{writeUserData(10)}}>SEND</div>
+            <input type="text" maxLength={300} ref={sendRef} className="sendmessage" onKeyUp={(event)=>{if(event.key=="Enter"){writeUserData()}}}/>
+            <div className="sendmessagebutton" onClick={()=>{writeUserData()}}>SEND</div>
           </div>
       </div>
     </div>
