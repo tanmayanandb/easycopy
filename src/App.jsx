@@ -5,7 +5,7 @@ import './App.css'
 // FIREBASE CODE START
 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push ,onValue, onDisconnect, increment, update } from "firebase/database";
+import { getDatabase, ref, set, push ,onValue, onDisconnect, increment, update, get } from "firebase/database";
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -79,7 +79,7 @@ function App(){
       let tempMsg = []
 
       for(let obj in data){
-        console.log(data[obj].message)
+        // console.log(data[obj].message)
         tempMsg.push(data[obj].message)
       }
 
@@ -88,7 +88,7 @@ function App(){
 
     const activeUsers = onValue(messageRef,(snapshot)=>{
       let data = snapshot.val();
-      if(!data.activeConnections) return;
+      if(!data) return;
       if(data.activeConnections <= 1){
         console.log("delete ts")
         onDisconnect(messageRef).remove()
@@ -127,11 +127,25 @@ function App(){
     sendRef.current.value = "";
   }
 
+  async function switchRoom(code){
+
+    const messageHeaderRef = ref(db, `chats/${code}`)
+    const snapshot = await get(messageHeaderRef)
+    const empt = snapshot.val()
+
+    if(!empt){
+      return;
+    }
+
+    setRoomCode(code)
+
+  }
+
   return (
     <div className="maindiv">
       <div className="inputdiv">
         <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode}/>
-        <div className="inputbutton" onClick={()=>{setRoomCode(pairRef.current.value)}}>CONNECT</div>
+        <div className="inputbutton" onClick={()=>{switchRoom(pairRef.current.value)}}>CONNECT</div>
       </div>
       <div className="chatdiv">
           <div className="messagelist">
