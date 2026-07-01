@@ -5,7 +5,7 @@ import './App.css'
 // FIREBASE CODE START
 
 import { initializeApp } from "firebase/app";
-import { getDatabase, ref, set, push ,onValue } from "firebase/database";
+import { getDatabase, ref, set, push ,onValue, onDisconnect } from "firebase/database";
 
 // TODO: Replace the following with your app's Firebase project configuration
 // See: https://firebase.google.com/docs/web/learn-more#config-object
@@ -51,6 +51,19 @@ function App(){
   }
 
   useEffect(()=>{
+
+    if(roomCode==0){
+      const id = Math.floor(Math.random()*(999999 - 100000) + 100000);
+      setRoomCode(id)
+      const tempref = ref(db, `chats/${id}`);  
+
+      onDisconnect(tempref).remove()
+    }
+
+  })
+
+  useEffect(()=>{
+
     onValue(messageRef, (snapshot)=>{
       let data = snapshot.val();
       console.log(data);
@@ -66,12 +79,13 @@ function App(){
 
       setMessages(tempMsg)
     })
+
   },[roomCode])
 
   return (
     <div className="maindiv">
       <div className="inputdiv">
-        <input type="text" className="inputnum" ref={pairRef} maxLength={6}/>
+        <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode}/>
         <div className="inputbutton" onClick={()=>{setRoomCode(pairRef.current.value)}}>CONNECT</div>
       </div>
       <div className="chatdiv">
