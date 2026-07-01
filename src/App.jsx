@@ -30,7 +30,6 @@ function App(){
   const sendRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [roomCode, setRoomCode] = useState(0);
-  const prevRoomCode = useRef(null)
   const [activeConnections, setActiveConnections] = useState(1);
   const isCreating = useRef(false)
   const markedPresence = useRef(false)
@@ -50,7 +49,6 @@ function App(){
 
       const id = Math.floor(Math.random()*(999999 - 100000) + 100000);
       setRoomCode(id)
-      prevRoomCode = id;
 
       const tempRef = ref(db,`chats/${id}`)
 
