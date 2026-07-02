@@ -1,6 +1,7 @@
 
 import { useRef, useState, useEffect } from "react";
 import './App.css'
+import { v4 as uuidv4 } from "uuid";
 
 // FIREBASE CODE START
 
@@ -30,9 +31,13 @@ function App(){
   const sendRef = useRef(null);
   const [messages, setMessages] = useState([]);
   const [roomCode, setRoomCode] = useState(0);
-  const [activeConnections, setActiveConnections] = useState(1);
+  const activeConnections = useRef(1);
   const isCreating = useRef(false)
   const markedPresence = useRef(false)
+  const uuid = useRef('');
+  const [colors, setColors] = useState(["red","blue","green","navy","purple"])
+  // const [colors, setColors] = useState([])
+  const [colorMap, setColorMap] = useState({})
 
 
   useEffect(()=>{
@@ -44,6 +49,8 @@ function App(){
     }
 
     if(roomCode==0){
+
+      uuid.current = uuidv4()
 
       isCreating.current = true;
 
@@ -75,13 +82,43 @@ function App(){
 
     const checkformsg = onValue(messageHeaderRef, (snapshot)=>{
       let data = snapshot.val();
-      console.log(data)
+      // console.log(data)
       let tempMsg = []
 
       for(let obj in data){
         // console.log(data[obj].message)
-        tempMsg.push(data[obj].message)
+
+        let tempcolor = "";
+        let colorarray = colors;
+        let tempcolormap = colorMap;
+
+        if(!colorMap[data[obj].uuid]){ 
+
+          if(colorarray.length == 0){
+            const rand1 = Math.floor(Math.random()*(255-200) + 100 - 1)
+            const rand2 = Math.floor(Math.random()*(255-100) + 100 - 1)
+            const rand3 = Math.floor(Math.random()*(255-100) + 100 - 1)
+
+            colorarray.push(`rgb(${rand1},${rand2},${rand3})`)
+
+            console.log(colorarray)
+          }
+
+          tempcolor = colorarray.pop(); 
+
+          tempcolormap[data[obj].uuid] = tempcolor;
+
+          setColorMap(tempcolormap)
+          setColors(colorarray);
+        }
+        else{
+          tempcolor = colorMap[data[obj].uuid]
+        }
+
+        tempMsg.push({msg:data[obj].message, uuid:data[obj].uuid, color:tempcolor})
       }
+
+      // console.log(tempMsg)
 
       setMessages(tempMsg)
     })
@@ -89,12 +126,11 @@ function App(){
     const activeUsers = onValue(messageRef,(snapshot)=>{
       let data = snapshot.val();
       if(!data) return;
+      activeConnections.current = data.activeConnections;
       if(data.activeConnections <= 1){
-        console.log("delete ts")
         onDisconnect(messageRef).remove()
       }
       else{
-        console.log("dont delete ts")
         onDisconnect(messageRef).cancel()
         onDisconnect(messageRef).update({activeConnections:increment(-1)})
       }
@@ -107,7 +143,7 @@ function App(){
   },[roomCode])
 
   function writeUserData() {
-    console.log("Sending user data")
+    // console.log("Sending user data") 
 
     let val = "";
     if(sendRef.current.value == ""){
@@ -122,6 +158,7 @@ function App(){
 
     set(newMessageRef, {
       message: val,
+      uuid: uuid.current
     });
 
     sendRef.current.value = "";
@@ -133,8 +170,14 @@ function App(){
     const snapshot = await get(messageHeaderRef)
     const empt = snapshot.val()
 
+    const tempRef = ref(db, `chats/${roomCode}`)
+
     if(!empt){
       return;
+    }
+
+    if(activeConnections.current<=1){
+      set(tempRef, {})
     }
 
     setRoomCode(code)
@@ -144,7 +187,7 @@ function App(){
   return (
     <div className="maindiv">
       <div className="inputdiv">
-        <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode}/>
+        <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode} inputMode="numeric"/>
         <div className="inputbutton" onClick={()=>{switchRoom(pairRef.current.value)}}>CONNECT</div>
       </div>
       <div className="chatdiv">
@@ -152,8 +195,8 @@ function App(){
             {
               messages.map((e,i,a)=>{
                 return(
-                  <div key={`message_${i}`} className="individualmsg">
-                    {e}
+                  <div key={`message_${i}`} className={`individualmsg  ${(e.uuid==uuid.current)?'mine':'yours'}`}>
+                    <div className={`individualmsgcontent  ${(e.uuid==uuid.current)?'minetext':'yourstext'}`} style={{backgroundColor:e.color}}>{e.msg}</div>
                   </div>
                 )
               })
@@ -163,6 +206,9 @@ function App(){
             <input type="text" maxLength={300} ref={sendRef} className="sendmessage" onKeyUp={(event)=>{if(event.key=="Enter"){writeUserData()}}}/>
             <div className="sendmessagebutton" onClick={()=>{writeUserData()}}>SEND</div>
           </div>
+      </div>
+      <div className="disproomcode">
+            {roomCode}
       </div>
     </div>
   )
