@@ -195,15 +195,16 @@
     }
 }
 
-.disproomcode{
+.disproomcodediv{
 
     /* background-color: brown; */
+
+    flex-direction: column;
 
     opacity: 0.2;
     position: fixed;
     height: 100%;
     width: 80%;
-    font-size: 20vw;
 
     color: white;
 
@@ -214,4 +215,8 @@
     pointer-events:none;
 
     z-index: 0;
+}
+
+.disproomcode{
+    font-size: 20vw;
 }

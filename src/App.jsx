@@ -39,6 +39,8 @@ function App(){
   // const [colors, setColors] = useState([])
   const [colorMap, setColorMap] = useState({})
 
+  const [copyText, setCopyText] = useState("Double click text to copy")
+
 
   useEffect(()=>{
 
@@ -184,6 +186,23 @@ function App(){
 
   }
 
+  async function copyToClipboard(text){
+    try{
+      const response = await navigator.clipboard.writeText(text);
+
+      console.log(response)
+
+      setCopyText("Text copied!")
+
+      const timeout = setTimeout(()=>{
+        setCopyText("Double click text to copy")
+      },1000)
+    }
+    catch{
+      console.log("couldnt copy")
+    }
+  }
+
   return (
     <div className="maindiv">
       <div className="inputdiv">
@@ -195,7 +214,7 @@ function App(){
             {
               messages.map((e,i,a)=>{
                 return(
-                  <div key={`message_${i}`} className={`individualmsg  ${(e.uuid==uuid.current)?'mine':'yours'}`}>
+                  <div key={`message_${i}`} className={`individualmsg  ${(e.uuid==uuid.current)?'mine':'yours'}`} onDoubleClick={()=>copyToClipboard(e.msg)}>
                     <div className={`individualmsgcontent  ${(e.uuid==uuid.current)?'minetext':'yourstext'}`} style={{backgroundColor:e.color}}>{e.msg}</div>
                   </div>
                 )
@@ -207,8 +226,9 @@ function App(){
             <div className="sendmessagebutton" onClick={()=>{writeUserData()}}>SEND</div>
           </div>
       </div>
-      <div className="disproomcode">
-            {roomCode}
+      <div className="disproomcodediv">
+            <div className="disproomcode">{roomCode}</div>
+            <div style={{"fontSize":"2rem"}}>{copyText}</div>
       </div>
     </div>
   )
