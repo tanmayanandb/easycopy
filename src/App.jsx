@@ -218,6 +218,7 @@ function App(){
       <div className="inputdiv">
         <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode} inputMode="numeric"  onKeyUp={(event)=>{if(event.key=="Enter"){switchRoom(pairRef.current.value)}}} />
         <div className="inputbutton" onClick={()=>{switchRoom(pairRef.current.value)}}>CONNECT</div>
+        <div className="sendmessagebutton" onClick={async()=>{navigator.clipboard.writeText(`https://copy.tanmayb.in?roomid=${roomCode}`)}}>LINK</div>
       </div>
       <div className="chatdiv">
           <div className="messagelist">
@@ -234,7 +235,6 @@ function App(){
           <div className="sendmessageinput">
             <input type="text" maxLength={300} ref={sendRef} className="sendmessage" onKeyUp={(event)=>{if(event.key=="Enter"){writeUserData()}}}/>
             <div className="sendmessagebutton" onClick={()=>{writeUserData()}}>SEND</div>
-            <div className="sendmessagebutton" onClick={async()=>{navigator.clipboard.writeText(`https://copy.tanmayb.in?roomid=${roomCode}`)}}>LINK</div>
           </div>
       </div>
       <div className="disproomcodediv">
