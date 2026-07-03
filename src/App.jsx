@@ -32,7 +32,7 @@ function App(){
   const [messages, setMessages] = useState([]);
   const [roomCode, setRoomCode] = useState(0);
   const activeConnections = useRef(1);
-  const isCreating = useRef(false)
+  const isCreating = useRef(false)  
   const markedPresence = useRef(false)
   const uuid = useRef('');
   const [colors, setColors] = useState(["red","blue","green","navy","purple"])
@@ -43,6 +43,10 @@ function App(){
 
 
   useEffect(()=>{
+
+    const params = new URLSearchParams(window.location.search)
+    const roomid = params.get('roomid')
+    console.log(roomid)
 
     if(roomCode==0 && (isCreating.current)) return;
 
@@ -55,6 +59,12 @@ function App(){
       uuid.current = uuidv4()
 
       isCreating.current = true;
+
+      if(roomid) {
+        console.log("switching rooms")
+        switchRoom(roomid);
+        return;
+      }
 
       const id = Math.floor(Math.random()*(999999 - 100000) + 100000);
       setRoomCode(id)
@@ -206,7 +216,7 @@ function App(){
   return (
     <div className="maindiv">
       <div className="inputdiv">
-        <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode} inputMode="numeric"/>
+        <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode} inputMode="numeric"  onKeyUp={(event)=>{if(event.key=="Enter"){switchRoom(pairRef.current.value)}}} />
         <div className="inputbutton" onClick={()=>{switchRoom(pairRef.current.value)}}>CONNECT</div>
       </div>
       <div className="chatdiv">
@@ -224,6 +234,7 @@ function App(){
           <div className="sendmessageinput">
             <input type="text" maxLength={300} ref={sendRef} className="sendmessage" onKeyUp={(event)=>{if(event.key=="Enter"){writeUserData()}}}/>
             <div className="sendmessagebutton" onClick={()=>{writeUserData()}}>SEND</div>
+            <div className="sendmessagebutton" onClick={async()=>{navigator.clipboard.writeText(`https://copy.tanmayb.in?roomid=${roomCode}`)}}>LINK</div>
           </div>
       </div>
       <div className="disproomcodediv">

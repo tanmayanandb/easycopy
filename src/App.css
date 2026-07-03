@@ -66,6 +66,8 @@
 
     font-size: 2rem;
     font-weight: bold;
+
+    cursor: pointer;
 }
 
 .chatdiv{
@@ -181,6 +183,8 @@
     font-weight: bold;
 
     border-radius: 1rem;
+
+    cursor: pointer;
 }
 
 
