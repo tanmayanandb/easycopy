@@ -96,6 +96,8 @@
     outline: none;
 
     z-index: 1;
+
+    scrollbar-width: none;
 } 
 
 .individualmsg{
@@ -105,6 +107,8 @@
     width: 100%;
     /* margin: 1rem; */
     margin-bottom: 1rem;
+
+    /* overflow-x: hidden; */
 }
 
 .mine{
