@@ -185,6 +185,7 @@ function App(){
     const tempRef = ref(db, `chats/${roomCode}`)
 
     if(!empt){
+      window.location.replace('https://copy.tanmayb.in');
       return;
     }
 
