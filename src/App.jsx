@@ -41,6 +41,7 @@ function App(){
 
   const [copyText, setCopyText] = useState("Double click text to copy")
 
+  const messagesEndRef = useRef(null)
 
   useEffect(()=>{
 
@@ -154,6 +155,11 @@ function App(){
 
   },[roomCode])
 
+  useEffect(()=>{
+      messagesEndRef.current?.scrollIntoView({behavior: "smooth"})
+      // messagesEndRef.current?.scroll(0,1000px)
+  },[messages])
+
   function writeUserData() {
     // console.log("Sending user data") 
 
@@ -232,6 +238,7 @@ function App(){
                 )
               })
             }
+            <div ref={messagesEndRef}/>
           </div>
           <div className="sendmessageinput">
             <input type="text" maxLength={300} ref={sendRef} className="sendmessage" onKeyUp={(event)=>{if(event.key=="Enter"){writeUserData()}}}/>
