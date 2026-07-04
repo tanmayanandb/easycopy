@@ -39,7 +39,9 @@ function App(){
   // const [colors, setColors] = useState([])
   const [colorMap, setColorMap] = useState({})
 
-  const [copyText, setCopyText] = useState("Double click text to copy")
+  const [copyText, setCopyText] = useState("Double click text to copy") 
+
+  const [privacyMode, setPrivacyMode] = useState(false)
 
   const messagesEndRef = useRef(null)
 
@@ -226,6 +228,7 @@ function App(){
         <input type="text" className="inputnum" ref={pairRef} maxLength={6} placeholder={roomCode} inputMode="numeric"  onKeyUp={(event)=>{if(event.key=="Enter"){switchRoom(pairRef.current.value)}}} />
         <div className="inputbutton" onClick={()=>{switchRoom(pairRef.current.value)}}>CONNECT</div>
         <div className="sendmessagebutton" onClick={async()=>{navigator.clipboard.writeText(`https://copy.tanmayb.in?roomid=${roomCode}`)}}>LINK</div>
+        <div className="sendmessagebutton" onClick={()=>{setPrivacyMode(!privacyMode)}}>PRIV</div>
       </div>
       <div className="chatdiv">
           <div className="messagelist">
@@ -233,7 +236,7 @@ function App(){
               messages.map((e,i,a)=>{
                 return(
                   <div key={`message_${i}`} className={`individualmsg  ${(e.uuid==uuid.current)?'mine':'yours'}`} onDoubleClick={()=>copyToClipboard(e.msg)}>
-                    <div className={`individualmsgcontent  ${(e.uuid==uuid.current)?'minetext':'yourstext'}`} style={{backgroundColor:e.color}}>{e.msg}</div>
+                    <div className={`individualmsgcontent  ${(e.uuid==uuid.current)?'minetext':'yourstext'} ${(privacyMode)?'private':''}`} style={{backgroundColor:e.color,"--priv":e.color}}>{e.msg}</div>
                   </div>
                 )
               })

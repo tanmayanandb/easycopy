@@ -137,6 +137,18 @@
 
 }
 
+.private{
+    color: var(--priv);
+    transition: color;
+    transition-duration: 1s;
+}
+
+.private:active{
+    color: white;
+    transition-duration: 0ms;
+
+}
+
 .minetext{
     background-color: blue;
 }
