@@ -244,7 +244,7 @@ function App(){
             <div ref={messagesEndRef}/>
           </div>
           <div className="sendmessageinput">
-            <input type="text" maxLength={300} ref={sendRef} className="sendmessage" onKeyUp={(event)=>{if(event.key=="Enter"){writeUserData()}}}/>
+            <input type="text" ref={sendRef} className="sendmessage" onKeyUp={(event)=>{if(event.key=="Enter"){writeUserData()}}}/>
             <div className="sendmessagebutton" onClick={()=>{writeUserData()}}>SEND</div>
           </div>
       </div>
